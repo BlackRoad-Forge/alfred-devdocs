@@ -1,0 +1,61 @@
+name: Deploy to Raspberry Pi
+
+on:
+  workflow_dispatch:
+    inputs:
+      pi_host:
+        description: 'Pi IP address or hostname'
+        required: true
+        default: '192.168.1.100'
+  push:
+    branches: [main, master]
+    paths: ['saas-app/**']
+
+defaults:
+  run:
+    working-directory: saas-app
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.PI_SSH_KEY }}" > ~/.ssh/pi_key
+          chmod 600 ~/.ssh/pi_key
+          ssh-keyscan -H ${{ inputs.pi_host || secrets.PI_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
+
+      - name: Deploy to Pi
+        env:
+          PI_HOST: ${{ inputs.pi_host || secrets.PI_HOST }}
+          PI_USER: ${{ secrets.PI_USER || 'pi' }}
+          PI_DEPLOY_PATH: /opt/saas-app
+        run: |
+          rsync -avz --delete \
+            -e "ssh -i ~/.ssh/pi_key" \
+            --exclude='node_modules' \
+            --exclude='.env' \
+            --exclude='data/' \
+            --exclude='tests/' \
+            --exclude='.git' \
+            ./ "${PI_USER}@${PI_HOST}:${PI_DEPLOY_PATH}/"
+
+          ssh -i ~/.ssh/pi_key "${PI_USER}@${PI_HOST}" << 'EOF'
+            cd /opt/saas-app
+            npm ci --production
+            mkdir -p data
+            node src/models/setup.js
+            sudo systemctl restart saas-app
+            echo "Deployed successfully"
+          EOF
+
+      - name: Health check
+        env:
+          PI_HOST: ${{ inputs.pi_host || secrets.PI_HOST }}
+        run: |
+          sleep 3
+          curl -f "http://${PI_HOST}:3000/api/health" || echo "Health check failed - app may still be starting"

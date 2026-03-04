@@ -1,0 +1,14 @@
+<% var title = 'Sign Up' %>
+<%- include('layout', { body: `
+<div class="auth-form">
+  <h2>Create Account</h2>
+  ${typeof error !== 'undefined' && error ? '<p class="error">' + error + '</p>' : ''}
+  <form method="POST" action="/signup">
+    <label>Name<input type="text" name="name"></label>
+    <label>Email<input type="email" name="email" required></label>
+    <label>Password<input type="password" name="password" required minlength="8"></label>
+    <button type="submit" class="btn btn-primary">Sign Up</button>
+  </form>
+  <p>Already have an account? <a href="/login">Login</a></p>
+</div>
+` }) %>

@@ -1,0 +1,34 @@
+{
+  "name": "saas-app",
+  "version": "1.0.0",
+  "description": "SaaS application with Stripe billing, deployed to Raspberry Pi",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "NODE_ENV=development node --watch src/server.js",
+    "test": "node --test tests/**/*.test.js",
+    "test:e2e": "npx playwright test",
+    "test:e2e:headed": "npx playwright test --headed",
+    "db:setup": "node src/models/setup.js",
+    "stripe:sync": "node scripts/stripe-sync-products.js",
+    "deploy:pi": "bash deploy/deploy-to-pi.sh"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.0.0",
+    "cookie-parser": "^1.4.6",
+    "dotenv": "^16.4.0",
+    "express": "^4.21.0",
+    "express-session": "^1.18.0",
+    "helmet": "^7.1.0",
+    "morgan": "^1.10.0",
+    "stripe": "^17.0.0",
+    "bcryptjs": "^2.4.3",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof title !== 'undefined' ? title : 'SaaS App' %></title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="/" class="logo">SaaS App</a>
+    <div class="nav-links">
+      <a href="/pricing">Pricing</a>
+      <% if (user) { %>
+        <a href="/dashboard">Dashboard</a>
+        <form method="POST" action="/logout" style="display:inline">
+          <button type="submit" class="btn btn-sm">Logout</button>
+        </form>
+      <% } else { %>
+        <a href="/login">Login</a>
+        <a href="/signup" class="btn btn-primary btn-sm">Sign Up</a>
+      <% } %>
+    </div>
+  </nav>
+  <main class="container">
+    <%- body %>
+  </main>
+</body>
+</html>

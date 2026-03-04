@@ -1,0 +1,55 @@
+<% var title = 'Pricing' %>
+<%- include('layout', { body: `
+<div class="pricing-page">
+  <h2>Choose Your Plan</h2>
+  <div class="pricing-grid">
+    <div class="plan-card">
+      <h3>Free</h3>
+      <div class="price">$0<span>/mo</span></div>
+      <ul>
+        <li>5 projects</li>
+        <li>Basic support</li>
+        <li>Community access</li>
+      </ul>
+      <a href="/signup" class="btn">Get Started</a>
+    </div>
+    <div class="plan-card featured">
+      <h3>Basic</h3>
+      <div class="price">$9<span>/mo</span></div>
+      <ul>
+        <li>25 projects</li>
+        <li>Email support</li>
+        <li>API access</li>
+      </ul>
+      <button class="btn btn-primary" data-checkout data-price="${typeof plans !== 'undefined' ? (plans.basic.stripePriceMonthly || '') : ''}">Subscribe</button>
+    </div>
+    <div class="plan-card">
+      <h3>Pro</h3>
+      <div class="price">$29<span>/mo</span></div>
+      <ul>
+        <li>Unlimited projects</li>
+        <li>Priority support</li>
+        <li>Full API access</li>
+        <li>Custom domains</li>
+      </ul>
+      <button class="btn btn-primary" data-checkout data-price="${typeof plans !== 'undefined' ? (plans.pro.stripePriceMonthly || '') : ''}">Subscribe</button>
+    </div>
+  </div>
+</div>
+<script>
+document.querySelectorAll('[data-checkout]').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const priceId = btn.dataset.price;
+    if (!priceId) return alert('Configure Stripe price IDs first');
+    const res = await fetch('/billing/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ priceId }),
+    });
+    const data = await res.json();
+    if (data.url) window.location.href = data.url;
+    else alert(data.error || 'Checkout failed');
+  });
+});
+</script>
+` }) %>
