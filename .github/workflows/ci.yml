@@ -1,0 +1,97 @@
+# CI Pipeline - Lint, Syntax Check, and Test
+# Pinned to specific action commit hashes for reproducibility
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint-and-syntax:
+    name: PHP Lint & Syntax Check
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        php-version: ['7.4', '8.0', '8.1', '8.2', '8.3']
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@c541c155eee45413f5b09a52248675b1a2f3b754 # v2.31.1
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: curl, json, xml, simplexml
+          tools: composer:2
+
+      - name: Validate composer.json
+        working-directory: src/scripts
+        run: composer validate --strict 2>/dev/null || composer validate
+
+      - name: PHP syntax check - devdocs.php
+        run: php -l src/scripts/devdocs.php
+
+      - name: PHP syntax check - conf.php
+        run: php -l src/scripts/conf.php
+
+      - name: PHP syntax check - workflows.php
+        run: php -l src/scripts/workflows.php
+
+      - name: PHP syntax check - all PHP files
+        run: find src/scripts -name "*.php" -exec php -l {} \;
+
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-22.04
+    needs: lint-and-syntax
+    strategy:
+      matrix:
+        php-version: ['7.4', '8.0', '8.1', '8.2', '8.3']
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@c541c155eee45413f5b09a52248675b1a2f3b754 # v2.31.1
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: curl, json, xml, simplexml
+          tools: composer:2
+
+      - name: Install dependencies
+        working-directory: src/scripts
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Run tests
+        run: php tests/WorkflowsTest.php
+
+  package:
+    name: Build Alfred Workflow Package
+    runs-on: ubuntu-22.04
+    needs: [lint-and-syntax, test]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Build .alfredworkflow package
+        run: |
+          cd src
+          zip -r ../DevDocs.alfredworkflow . \
+            -x "*.DS_Store" \
+            -x "cache/*" \
+            -x "docs/*" \
+            -x "scripts/vendor/rodneyrehm/plist/tests/*" \
+            -x "scripts/vendor/rodneyrehm/plist/examples/*"
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: DevDocs.alfredworkflow
+          path: DevDocs.alfredworkflow
+          retention-days: 30

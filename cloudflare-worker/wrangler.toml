@@ -1,0 +1,22 @@
+name = "devdocs-proxy"
+main = "src/index.js"
+compatibility_date = "2024-12-01"
+
+# KV namespace for caching documentation indices
+[[kv_namespaces]]
+binding = "DOCS_CACHE"
+id = ""  # Set via `wrangler kv:namespace create DOCS_CACHE`
+
+[vars]
+DEVDOCS_BASE_URL = "https://devdocs.io/"
+CACHE_TTL_SECONDS = "604800"  # 7 days
+ALLOWED_ORIGINS = "*"
+
+# Production environment
+[env.production]
+name = "devdocs-proxy"
+route = ""  # Set to your domain route, e.g. "devdocs-proxy.yourdomain.workers.dev/*"
+
+[env.production.vars]
+DEVDOCS_BASE_URL = "https://devdocs.io/"
+CACHE_TTL_SECONDS = "604800"

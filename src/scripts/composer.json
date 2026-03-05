@@ -8,6 +8,7 @@
         }
     ],
     "require": {
-        "rodneyrehm/plist": "2"
+        "php": ">=7.4",
+        "rodneyrehm/plist": "2.0.0"
     }
 }

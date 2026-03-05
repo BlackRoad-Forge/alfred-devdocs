@@ -1,0 +1,35 @@
+version: 2
+
+updates:
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "dependencies"
+      - "automerge"
+    open-pull-requests-limit: 10
+
+  # Composer (PHP dependencies)
+  - package-ecosystem: "composer"
+    directory: "/src/scripts"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "dependencies"
+      - "automerge"
+    open-pull-requests-limit: 5
+
+  # npm (Cloudflare Worker)
+  - package-ecosystem: "npm"
+    directory: "/cloudflare-worker"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "dependencies"
+      - "automerge"
+    open-pull-requests-limit: 5

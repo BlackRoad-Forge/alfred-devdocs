@@ -75,8 +75,8 @@ class DevDocs {
     error_log("Checking existence of cache at $docFile");
     // Keep the docs in cache before expired
     if (!file_exists($docFile) || ($this->cacheLife >= 0 && filemtime($docFile) <= time() - 86400 * $this->cacheLife)) {
-      error_log("Download doc for $documentation at \"" . $this->baseUrl . 'docs/' . $documentation . '/index.json') . "\"";
-      file_put_contents($docFile, file_get_contents($this->baseUrl . 'docs/' . $documentation . '/index.json'));
+      error_log("Download doc for $documentation at \"" . $this->baseUrl . 'docs/' . $documentation . '/index.json"');
+      file_put_contents($docFile, $this->workflows->fetch($this->baseUrl . 'docs/' . $documentation . '/index.json'));
     }
   }
 
@@ -85,7 +85,8 @@ class DevDocs {
     $query = strtolower($query);
     $data = json_decode(file_get_contents(self::$cacheDirectory . $documentation . '.json'));
     if ($data === null) {
-      unlink(self::$cacheDirectory . $documentation . '.json');
+      @unlink(self::$cacheDirectory . $documentation . '.json');
+      return;
     }
 
     $entries = $data->entries;
@@ -93,7 +94,7 @@ class DevDocs {
     $found = [];
     foreach ($entries as $key => $result) {
       $value = strtolower(trim($result->name));
-      $description = strtolower(utf8_decode(strip_tags($result->type)));
+      $description = strtolower(mb_convert_encoding(strip_tags($result->type), 'ISO-8859-1', 'UTF-8'));
 
       if (empty($query)) {
         $found[$value] = true;
